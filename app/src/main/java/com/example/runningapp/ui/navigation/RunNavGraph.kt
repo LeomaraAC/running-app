@@ -6,11 +6,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.runningapp.ui.screens.RunDestination
+import com.example.runningapp.ui.screens.HomeDestination
 import com.example.runningapp.ui.screens.RunScreen
 import com.example.runningapp.ui.screens.SettingsDestination
 import com.example.runningapp.ui.screens.SettingsScreen
-import com.example.runningapp.ui.screens.SetupDestination
+import com.example.runningapp.ui.screens.WelcomeDestination
 import com.example.runningapp.ui.screens.SetupScreen
 import com.example.runningapp.ui.screens.StatisticsDestination
 import com.example.runningapp.ui.screens.StatisticsScreen
@@ -23,14 +23,14 @@ import com.example.runningapp.ui.viewmodels.StatisticsViewModel
 fun RunNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
     NavHost(
         navController = navController,
-        startDestination = SetupDestination.route,
+        startDestination = WelcomeDestination.route,
         modifier = modifier
     ) {
-        composable(route = SetupDestination.route) {
-            SetupScreen(navigateToRun = {navController.navigate(RunDestination.route)})
+        composable(route = WelcomeDestination.route) {
+            SetupScreen(navigateToRun = {navController.navigate(HomeDestination.route)})
         }
 
-        composable(route = RunDestination.route) {
+        composable(route = HomeDestination.route) {
             val viewModel = hiltViewModel<MainViewModel>()
             RunScreen(viewModel = viewModel)
         }

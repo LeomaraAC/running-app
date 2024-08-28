@@ -1,6 +1,5 @@
 package com.example.runningapp.ui.screens
 
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -9,8 +8,8 @@ import com.example.runningapp.ui.navigation.NavigationDestination
 import com.example.runningapp.ui.theme.RunningAppTheme
 import com.example.runningapp.ui.viewmodels.MainViewModel
 
-object RunDestination: NavigationDestination {
-    override val route: String = "run"
+object HomeDestination: NavigationDestination {
+    override val route: String = "home"
 }
 
 @Composable
