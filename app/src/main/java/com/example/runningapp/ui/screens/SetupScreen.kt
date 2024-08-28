@@ -1,25 +1,96 @@
 package com.example.runningapp.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material3.Button
+import androidx.compose.material3.ElevatedButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.runningapp.R
 import com.example.runningapp.ui.navigation.NavigationDestination
+import com.example.runningapp.ui.screens.components.SettingsInputForm
 import com.example.runningapp.ui.theme.RunningAppTheme
+import com.example.runningapp.ui.viewmodels.SettingsViewModel
 
 
-object SetupDestination: NavigationDestination {
+object SetupDestination : NavigationDestination {
     override val route: String = "setup"
 }
 
 @Composable
-fun SetupScreen(modifier: Modifier = Modifier) {
+fun SetupScreen(
+    navigateToRun: () -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: SettingsViewModel = viewModel()
+) {
+    Column(
+        modifier.padding(10.dp),
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.End
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = stringResource(id = R.string.welcome_message),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.displaySmall
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            SettingsInputForm(
+                settingsUiState = viewModel.settingsUiState,
+                onValueChange = viewModel::updateUiState,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        ElevatedButton(
+            onClick = navigateToRun,
+            enabled = viewModel.settingsUiState.isValid,
+            modifier = Modifier.widthIn(min = 250.dp)
+        ) {
+            Text(text = stringResource(id = R.string.continuar))
+            Spacer(modifier = Modifier.width(5.dp))
+            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+        }
+
+    }
 
 }
 
 @Preview(showBackground = true)
 @Composable
 fun SetupScreenPreview() {
-    RunningAppTheme {
-        SetupScreen()
+    RunningAppTheme() {
+        SetupScreen(
+            navigateToRun = {},
+            modifier = Modifier.fillMaxSize()
+        )
     }
 }

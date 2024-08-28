@@ -27,7 +27,7 @@ fun RunNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         modifier = modifier
     ) {
         composable(route = SetupDestination.route) {
-            SetupScreen()
+            SetupScreen(navigateToRun = {navController.navigate(RunDestination.route)})
         }
 
         composable(route = RunDestination.route) {
