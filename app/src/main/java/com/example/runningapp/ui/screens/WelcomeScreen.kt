@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -40,41 +41,44 @@ fun SetupScreen(
     modifier: Modifier = Modifier,
     viewModel: SettingsViewModel = viewModel()
 ) {
-    Column(
-        modifier.padding(10.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
-        horizontalAlignment = Alignment.End
-    ) {
+    Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.primaryContainer) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            modifier.padding(10.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
+            horizontalAlignment = Alignment.End
         ) {
-            Text(
-                text = stringResource(id = R.string.welcome_message),
-                textAlign = TextAlign.Center,
-                style = MaterialTheme.typography.displaySmall
-            )
-            Spacer(modifier = Modifier.height(20.dp))
-            SettingsInputForm(
-                settingsUiState = viewModel.settingsUiState,
-                onValueChange = viewModel::updateUiState,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = stringResource(id = R.string.welcome_message),
+                    textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.displaySmall
+                )
+                Spacer(modifier = Modifier.height(20.dp))
+                SettingsInputForm(
+                    settingsUiState = viewModel.settingsUiState,
+                    onValueChange = viewModel::updateUiState,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
 
-        ElevatedButton(
-            onClick = navigateToRun,
-            enabled = viewModel.settingsUiState.isValid,
-            modifier = Modifier.widthIn(min = 250.dp)
-        ) {
-            Text(text = stringResource(id = R.string.continuar))
-            Spacer(modifier = Modifier.width(5.dp))
-            Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
-        }
+            ElevatedButton(
+                onClick = navigateToRun,
+                enabled = viewModel.settingsUiState.isValid,
+                modifier = Modifier.widthIn(min = 150.dp)
+            ) {
+                Text(text = stringResource(id = R.string.continuar))
+                Spacer(modifier = Modifier.width(5.dp))
+                Icon(imageVector = Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null)
+            }
 
+        }
     }
 
 }
