@@ -33,6 +33,8 @@ import com.example.runningapp.ui.viewmodels.SettingsViewModel
 
 object WelcomeDestination : NavigationDestination {
     override val route: String = "welcome"
+    override val icon = null
+    override val title = null
 }
 
 @Composable

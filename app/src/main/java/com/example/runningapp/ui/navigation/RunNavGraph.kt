@@ -27,12 +27,15 @@ fun RunNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
         modifier = modifier
     ) {
         composable(route = WelcomeDestination.route) {
-            SetupScreen(navigateToRun = {navController.navigate(HomeDestination.route)})
+            SetupScreen(navigateToRun = { navController.navigate(HomeDestination.route) })
         }
 
         composable(route = HomeDestination.route) {
             val viewModel = hiltViewModel<MainViewModel>()
-            RunScreen(viewModel = viewModel)
+            RunScreen(
+                navigateToStartTracking = { navController.navigate(TrackingDestination.route) },
+                viewModel = viewModel
+            )
         }
 
         composable(route = StatisticsDestination.route) {
