@@ -1,4 +1,5 @@
 [versions]
+accompanistPermissions = "0.36.0"
 agp = "8.5.2"
 hiltAndroidGradlePlugin = "2.52"
 kotlin = "2.0.20"
@@ -25,6 +26,7 @@ hiltNavigation = "1.2.0"
 uiTextGoogleFonts = "1.6.8"
 
 [libraries]
+accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hiltAndroidGradlePlugin" }
 hilt-navigation = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigation" }
@@ -56,7 +58,6 @@ google-android-gms-play-service-maps = { group = "com.google.android.gms", name 
 google-android-maps-compose = { group = "com.google.maps.android", name = "maps-compose", version.ref = "mapsCompose" }
 google-android-maps-ktx = { group = "com.google.maps.android", name = "maps-ktx", version.ref = "mapsKtx" }
 google-android-maps-utils-ktx = { group = "com.google.maps.android", name = "maps-utils-ktx", version.ref = "mapsKtx" }
-pub-devrel-easypermissions = { group = "pub.devrel", name = "easypermissions", version.ref = "easyPermission" }
 com-jakewharton-timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 secrets-gradle-plugin = { module = "com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin", version.ref = "secretsGradlePlugin" }
 androidx-ui-text-google-fonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "uiTextGoogleFonts" }

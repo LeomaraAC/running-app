@@ -91,9 +91,6 @@ dependencies {
     implementation(libs.google.android.maps.ktx)
     implementation(libs.google.android.maps.utils.ktx)
 
-    // Easy Permissions
-    implementation(libs.pub.devrel.easypermissions)
-
     // Timber
     implementation(libs.com.jakewharton.timber)
 
@@ -104,6 +101,9 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation)
     ksp(libs.hilt.compiler)
+
+    // Permission
+    implementation(libs.accompanist.permissions)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
