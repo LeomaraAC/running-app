@@ -5,4 +5,5 @@
     <string name="settings_peso_label">Peso</string>
     <string name="welcome_message">Bem Vindo!\nPor favor informe seu nome e peso.</string>
     <string name="continuar">Continuar</string>
+    <string name="comecar_corrida">Começar</string>
 </resources>
