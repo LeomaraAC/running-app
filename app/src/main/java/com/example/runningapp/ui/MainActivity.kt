@@ -19,7 +19,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             RunningAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    RunningApp(modifier = Modifier.padding(innerPadding))
+                    RunningApp(modifier = Modifier.padding(innerPadding), intent = intent)
                 }
             }
         }
