@@ -2,6 +2,7 @@ package com.example.runningapp.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -49,7 +50,8 @@ fun RunNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
 
         composable(route = TrackingDestination.route) {
             val viewModel = hiltViewModel<MainViewModel>()
-            TrackingScreen(viewModel = viewModel)
+            val context = LocalContext.current
+            TrackingScreen(context=context, viewModel = viewModel)
         }
     }
 }

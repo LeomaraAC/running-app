@@ -67,6 +67,7 @@ dependencies {
 
     //Architectural Components
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.service)
 
     //Room
     implementation(libs.androidx.room.runtime)
