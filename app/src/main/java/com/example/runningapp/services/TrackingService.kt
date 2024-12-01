@@ -7,7 +7,6 @@ import android.app.NotificationManager.IMPORTANCE_LOW
 import android.app.PendingIntent
 import android.app.PendingIntent.FLAG_IMMUTABLE
 import android.app.PendingIntent.FLAG_UPDATE_CURRENT
-import android.content.ContentProviderClient
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.content.pm.ServiceInfo
@@ -18,8 +17,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
+import androidx.lifecycle.lifecycleScope
 import com.example.runningapp.R
 import com.example.runningapp.ui.MainActivity
 import com.example.runningapp.utils.Constants.ACTION_PAUSE_SERVICE
@@ -38,6 +36,8 @@ import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import timber.log.Timber
 
 typealias Polyline = MutableList<LatLng>
@@ -48,19 +48,19 @@ class TrackingService : LifecycleService() {
 
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
+
     companion object {
-        val isTracking = MutableLiveData<Boolean>()
-        val pathPoints = MutableLiveData<Polylines>()
+        val pathPoints = MutableStateFlow<Polylines> (mutableListOf())
+        val isTracking = MutableStateFlow(false)
     }
 
     val locationCallback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
             super.onLocationResult(result)
-            if (isTracking.value!!) {
+            if (isTracking.value) {
                 result.locations.let { locations ->
                     for (location in locations) {
                         addPathPoint(location)
-                        Timber.d("NEW LOCATION: ${location.latitude}, ${location.longitude}")
                     }
                 }
             }
@@ -71,9 +71,10 @@ class TrackingService : LifecycleService() {
         super.onCreate()
         postInitialValue()
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
-        isTracking.observe(this, Observer {
-            updateLocationTracking(it)
-        })
+        lifecycleScope.launch {
+            isTracking.collect{updateLocationTracking(it)}
+        }
+
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -136,28 +137,33 @@ class TrackingService : LifecycleService() {
     }
 
     private fun postInitialValue() {
-        isTracking.postValue(false)
-        pathPoints.postValue(mutableListOf())
+        isTracking.value  = false
+        pathPoints.value = mutableListOf()
     }
 
     private fun addPathPoint(location: Location?) {
         location?.let {
             val pos = LatLng(it.latitude, it.longitude)
-            pathPoints.value?.apply {
-                last().add(pos)
-                pathPoints.postValue(this)
+            val updatedPathPoints = clonePathPoints()
+            if (updatedPathPoints.isNotEmpty()) {
+                updatedPathPoints.last().add(pos)
+            } else {
+                updatedPathPoints.add(mutableListOf(pos))
             }
+
+            pathPoints.value = updatedPathPoints
         }
     }
 
-    private fun addEmptyPolylines() = pathPoints.value?.apply {
-        add(mutableListOf())
-        pathPoints.postValue(this)
-    } ?: pathPoints.postValue(mutableListOf(mutableListOf()))
+    private fun addEmptyPolylines() {
+        val updatedPathPoints = clonePathPoints()
+        updatedPathPoints.apply { add(mutableListOf()) }
+        pathPoints.value = updatedPathPoints
+    }
 
     private fun startForegroundService() {
         addEmptyPolylines()
-        isTracking.postValue(true)
+        isTracking.value = true
 
         val notificationManager =
             getSystemService(NOTIFICATION_SERVICE) as NotificationManager
@@ -202,6 +208,10 @@ class TrackingService : LifecycleService() {
             IMPORTANCE_LOW
         )
         notificationManager.createNotificationChannel(channel)
+    }
+
+    private fun clonePathPoints(): Polylines {
+       return pathPoints.value.map { it.toMutableList() }.toMutableList()
     }
 
 }
