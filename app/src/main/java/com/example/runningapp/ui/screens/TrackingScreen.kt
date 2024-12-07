@@ -19,6 +19,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -32,11 +36,22 @@ import com.example.runningapp.R
 import com.example.runningapp.services.TrackingService
 import com.example.runningapp.ui.navigation.NavigationDestination
 import com.example.runningapp.ui.viewmodels.MainViewModel
+import com.example.runningapp.ui.viewmodels.TrackingViewModel
 import com.example.runningapp.utils.Constants.ACTION_START_OR_RESUME_SERVICE
+import com.example.runningapp.utils.Constants.MAP_ZOOM
+import com.example.runningapp.utils.Constants.POLYLINE_COLOR
+import com.example.runningapp.utils.Constants.POLYLINE_WIDTH
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.MapType
+import com.google.maps.android.compose.Polyline
+import com.google.maps.android.compose.rememberCameraPositionState
 
 object TrackingDestination : NavigationDestination {
     override val route: String = "tracking"
@@ -50,27 +65,58 @@ object TrackingDestination : NavigationDestination {
 fun TrackingScreen(
     context: Context,
     modifier: Modifier = Modifier,
-    viewModel: MainViewModel = viewModel()
+    mainViewModel: MainViewModel = viewModel(),
+    trackingViewModel: TrackingViewModel = viewModel()
 ) {
+
     val postNotificationPermissions =
         rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS)
+    val pathPoints by trackingViewModel.pathPoints.collectAsState(initial = mutableListOf())
+    val isTracking by trackingViewModel.isTracking.collectAsState(initial = false)
+
+    val cameraPositionState = rememberCameraPositionState()
+    val properties by remember {
+        mutableStateOf(MapProperties(mapType = MapType.TERRAIN))
+    }
+
+    LaunchedEffect(pathPoints) {
+        if (pathPoints.size == 0) {
+            return@LaunchedEffect
+        }
+        val currentPosition = if (pathPoints.last().isNotEmpty()) pathPoints.last().last() else  LatLng(0.0, 0.0)
+        if (pathPoints.size == 1 && pathPoints.last().size == 0) {
+            cameraPositionState.position = CameraPosition.fromLatLngZoom(currentPosition, MAP_ZOOM)
+        } else {
+            cameraPositionState.animate(
+                update = CameraUpdateFactory.newLatLng(currentPosition),
+                durationMs = 1000
+            )
+        }
+    }
 
     LaunchedEffect(key1 = true) {
         if (!postNotificationPermissions.status.isGranted) {
             postNotificationPermissions.launchPermissionRequest()
         }
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.primaryContainer),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+
         GoogleMap(
+            cameraPositionState = cameraPositionState,
+            properties = properties,
             modifier = Modifier
                 .fillMaxSize()
                 .weight(1f)
-        ) { }
+        ) {
+            pathPoints.forEach { polylines -> Polyline(points = polylines, clickable = true, color = POLYLINE_COLOR, width = POLYLINE_WIDTH) }
+        }
+
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.default_space)))
         Text(
             text = "0:00:00",
