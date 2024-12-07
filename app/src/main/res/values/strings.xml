@@ -6,4 +6,6 @@
     <string name="welcome_message">Bem Vindo!\nPor favor informe seu nome e peso.</string>
     <string name="continuar">Continuar</string>
     <string name="comecar_corrida">Começar</string>
+    <string name="pausar_corrida">Pausar</string>
+    <string name="finalizar_corrida">Finalizar</string>
 </resources>

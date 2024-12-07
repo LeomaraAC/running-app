@@ -4,9 +4,12 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import androidx.annotation.DrawableRes
 import androidx.annotation.RequiresApi
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -33,11 +36,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.runningapp.R
+import com.example.runningapp.services.Polylines
 import com.example.runningapp.services.TrackingService
 import com.example.runningapp.ui.navigation.NavigationDestination
 import com.example.runningapp.ui.viewmodels.MainViewModel
 import com.example.runningapp.ui.viewmodels.TrackingViewModel
+import com.example.runningapp.utils.Constants.ACTION_PAUSE_SERVICE
 import com.example.runningapp.utils.Constants.ACTION_START_OR_RESUME_SERVICE
+import com.example.runningapp.utils.Constants.ACTION_STOP_SERVICE
 import com.example.runningapp.utils.Constants.MAP_ZOOM
 import com.example.runningapp.utils.Constants.POLYLINE_COLOR
 import com.example.runningapp.utils.Constants.POLYLINE_WIDTH
@@ -76,14 +82,14 @@ fun TrackingScreen(
 
     val cameraPositionState = rememberCameraPositionState()
     val properties by remember {
-        mutableStateOf(MapProperties(mapType = MapType.TERRAIN))
+        mutableStateOf(MapProperties(mapType = MapType.TERRAIN, isMyLocationEnabled = true))
     }
 
     LaunchedEffect(pathPoints) {
         if (pathPoints.size == 0) {
             return@LaunchedEffect
         }
-        val currentPosition = if (pathPoints.last().isNotEmpty()) pathPoints.last().last() else  LatLng(0.0, 0.0)
+        val currentPosition = getCurrentPosition(pathPoints)
         if (pathPoints.size == 1 && pathPoints.last().size == 0) {
             cameraPositionState.position = CameraPosition.fromLatLngZoom(currentPosition, MAP_ZOOM)
         } else {
@@ -114,7 +120,14 @@ fun TrackingScreen(
                 .fillMaxSize()
                 .weight(1f)
         ) {
-            pathPoints.forEach { polylines -> Polyline(points = polylines, clickable = true, color = POLYLINE_COLOR, width = POLYLINE_WIDTH) }
+            pathPoints.forEach { polylines ->
+                Polyline(
+                    points = polylines,
+                    clickable = true,
+                    color = POLYLINE_COLOR,
+                    width = POLYLINE_WIDTH
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.default_space)))
@@ -126,30 +139,99 @@ fun TrackingScreen(
             fontWeight = FontWeight.Bold
         )
 
-        StartButton(context = context)
+        Row (modifier = Modifier.fillMaxWidth()) {
+            if (isTracking) {
+                PauseButton(context = context, modifier=Modifier.weight(1f))
+            } else {
+                StartButton(context = context, modifier=Modifier.weight(1f))
+                if (pathPoints.size > 0) {
+                    StopButton(context = context, modifier=Modifier.weight(1f))
+                }
+            }
+        }
+
+
     }
 }
 
 @Composable
 fun StartButton(context: Context, modifier: Modifier = Modifier) {
+    BaseButton(
+        text = R.string.comecar_corrida,
+        icon = R.drawable.directions_run_icon,
+        modifier = modifier
+    ) {
+        sendCommandToService(
+            context = context,
+            action = ACTION_START_OR_RESUME_SERVICE
+        )
+    }
+
+}
+
+@Composable
+fun PauseButton(context: Context, modifier: Modifier = Modifier) {
+    BaseButton(
+        text = R.string.pausar_corrida,
+        icon = R.drawable.pause_icon,
+        modifier = modifier
+    ) {
+        sendCommandToService(
+            context = context,
+            action = ACTION_PAUSE_SERVICE
+        )
+    }
+}
+
+@Composable
+fun StopButton(context: Context, modifier: Modifier = Modifier) {
+    BaseButton(
+        text = R.string.finalizar_corrida,
+        icon = R.drawable.stop_icon,
+        modifier = modifier
+    ) {
+        sendCommandToService(
+            context = context,
+            action = ACTION_STOP_SERVICE
+        )
+    }
+}
+
+@Composable
+private fun BaseButton(
+    @StringRes text: Int,
+    @DrawableRes icon: Int,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
     ElevatedButton(
-        onClick = {
-            sendCommandToService(
-                context = context,
-                action = ACTION_START_OR_RESUME_SERVICE
-            )
-        },
-        modifier = Modifier
+        onClick = onClick,
+        modifier = modifier
             .padding(15.dp)
             .fillMaxWidth()
     ) {
-        Text(text = stringResource(id = R.string.comecar_corrida))
+        Text(text = stringResource(id = text))
         Spacer(modifier = Modifier.width(5.dp))
         Icon(
-            painter = painterResource(id = R.drawable.directions_run_icon),
+            painter = painterResource(id = icon),
             contentDescription = null
         )
     }
+}
+
+private fun getCurrentPosition(pathPoints: Polylines): LatLng {
+    if (pathPoints.isEmpty()) {
+        return LatLng(0.0, 0.0)
+    }
+    if (pathPoints.last().isNotEmpty()) {
+        return pathPoints.last().last()
+    }
+
+    if (pathPoints.size > 1) {
+        return pathPoints[pathPoints.size - 2].last()
+    }
+
+    return LatLng(0.0, 0.0)
 }
 
 private fun sendCommandToService(context: Context, action: String) {
