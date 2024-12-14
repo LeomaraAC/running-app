@@ -79,6 +79,7 @@ fun TrackingScreen(
         rememberPermissionState(permission = Manifest.permission.POST_NOTIFICATIONS)
     val pathPoints by trackingViewModel.pathPoints.collectAsState(initial = mutableListOf())
     val isTracking by trackingViewModel.isTracking.collectAsState(initial = false)
+    val timeRunning by trackingViewModel.curTimeFormatted.collectAsState(initial = "00:00:00:00")
 
     val cameraPositionState = rememberCameraPositionState()
     val properties by remember {
@@ -132,7 +133,7 @@ fun TrackingScreen(
 
         Spacer(modifier = Modifier.height(dimensionResource(id = R.dimen.default_space)))
         Text(
-            text = "0:00:00",
+            text = timeRunning,
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.displaySmall,
