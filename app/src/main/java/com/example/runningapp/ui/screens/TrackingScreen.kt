@@ -16,6 +16,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -65,11 +68,11 @@ object TrackingDestination : NavigationDestination {
     override val title = null
 }
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun TrackingScreen(
     context: Context,
+    navigateToHome: () -> Unit,
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel = viewModel(),
     trackingViewModel: TrackingViewModel = viewModel()
@@ -113,6 +116,15 @@ fun TrackingScreen(
             .background(MaterialTheme.colorScheme.primaryContainer),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        if (isTracking || pathPoints.size > 0) {
+            Row(modifier = Modifier.fillMaxWidth()) {
+                CancelRunButton(
+                    context = context,
+                    navigateToHome = navigateToHome,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
 
         GoogleMap(
             cameraPositionState = cameraPositionState,
@@ -140,13 +152,13 @@ fun TrackingScreen(
             fontWeight = FontWeight.Bold
         )
 
-        Row (modifier = Modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.fillMaxWidth()) {
             if (isTracking) {
-                PauseButton(context = context, modifier=Modifier.weight(1f))
+                PauseButton(context = context, modifier = Modifier.weight(1f))
             } else {
-                StartButton(context = context, modifier=Modifier.weight(1f))
+                StartButton(context = context, modifier = Modifier.weight(1f))
                 if (pathPoints.size > 0) {
-                    StopButton(context = context, modifier=Modifier.weight(1f))
+                    StopButton(context = context, modifier = Modifier.weight(1f))
                 }
             }
         }
@@ -185,6 +197,30 @@ fun PauseButton(context: Context, modifier: Modifier = Modifier) {
 }
 
 @Composable
+fun CancelRunButton(context: Context, navigateToHome: () -> Unit, modifier: Modifier = Modifier) {
+    val showDialog = remember { mutableStateOf(false) }
+    if (showDialog.value) {
+        CancelarCorridaDialog(
+            confirmButton = {
+                sendCommandToService(
+                    context = context,
+                    action = ACTION_STOP_SERVICE
+                )
+                navigateToHome()
+            },
+            setShowDialog = { showDialog.value = it }
+        )
+    }
+    BaseButton(
+        text = R.string.cancelar_corrida,
+        icon = R.drawable.close_icon,
+        modifier = modifier
+    ) {
+        showDialog.value = true
+    }
+}
+
+@Composable
 fun StopButton(context: Context, modifier: Modifier = Modifier) {
     BaseButton(
         text = R.string.finalizar_corrida,
@@ -196,6 +232,38 @@ fun StopButton(context: Context, modifier: Modifier = Modifier) {
             action = ACTION_STOP_SERVICE
         )
     }
+}
+
+@Composable
+fun CancelarCorridaDialog(
+    confirmButton: () -> Unit = {},
+    cancelButton: () -> Unit = {},
+    setShowDialog: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    AlertDialog(
+        icon = { Icon(Icons.Filled.Close, null) },
+        title = { Text(text = stringResource(id = R.string.cancelar_corrida_dialog_title)) },
+        text = { Text(text = stringResource(id = R.string.cancelar_corrida_dialog_message)) },
+        onDismissRequest = { setShowDialog(false) },
+        confirmButton = {
+            ElevatedButton(onClick = {
+                confirmButton()
+                setShowDialog(false)
+            }) {
+                Text(text = stringResource(id = R.string.cancelar_corrida_dialog_confirm))
+            }
+        },
+        dismissButton = {
+            ElevatedButton(onClick = {
+                cancelButton()
+                setShowDialog(false)
+            }) {
+                Text(text = stringResource(id = R.string.cancelar_corrida_dialog_cancel))
+            }
+        },
+    )
+
 }
 
 @Composable

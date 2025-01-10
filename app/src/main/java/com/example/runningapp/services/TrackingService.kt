@@ -52,6 +52,7 @@ typealias Polylines = MutableList<Polyline>
 @AndroidEntryPoint
 class TrackingService : LifecycleService() {
     var isFirstRun = true
+    var isServiceKilled = false
 
     @Inject
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
@@ -69,7 +70,7 @@ class TrackingService : LifecycleService() {
     private var lastSecondTimestamp = 0L
 
     companion object {
-        val pathPoints = MutableStateFlow<Polylines> (mutableListOf())
+        val pathPoints = MutableStateFlow<Polylines>(mutableListOf())
         val isTracking = MutableStateFlow(false)
         val timeRunInMillis = MutableStateFlow<Long>(0L)
     }
@@ -93,7 +94,7 @@ class TrackingService : LifecycleService() {
         postInitialValue()
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
         lifecycleScope.launch {
-            isTracking.collect{
+            isTracking.collect {
                 updateLocationTracking(it)
                 updateNotificationTrackingState(it)
             }
@@ -121,10 +122,20 @@ class TrackingService : LifecycleService() {
 
                 ACTION_STOP_SERVICE -> {
                     Timber.d("sttoped service")
+                    killService()
                 }
             }
         }
         return super.onStartCommand(intent, flags, startId)
+    }
+
+    private fun killService() {
+        isServiceKilled = true
+        isFirstRun = true
+        pauseService()
+        postInitialValue()
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
     }
 
     private fun startTimer() {
@@ -167,12 +178,14 @@ class TrackingService : LifecycleService() {
             set(curNotificationBuilder, ArrayList<NotificationCompat.Action>())
         }
 
-        curNotificationBuilder = baseNotificationBuilder.addAction(
-            R.drawable.pause_icon,
-            notificationActionText,
-            pendingIntent
-        )
-        notificationManager.notify(NOTIFICATION_ID, curNotificationBuilder.build())
+        if(!isServiceKilled) {
+            curNotificationBuilder = baseNotificationBuilder.addAction(
+                R.drawable.pause_icon,
+                notificationActionText,
+                pendingIntent
+            )
+            notificationManager.notify(NOTIFICATION_ID, curNotificationBuilder.build())
+        }
     }
 
     private fun pauseService() {
@@ -215,7 +228,7 @@ class TrackingService : LifecycleService() {
     }
 
     private fun postInitialValue() {
-        isTracking.value  = false
+        isTracking.value = false
         pathPoints.value = mutableListOf()
         timeRunInMillis.value = 0L
         timeRunInSeconds.value = 0L
@@ -263,9 +276,11 @@ class TrackingService : LifecycleService() {
 
         lifecycleScope.launch {
             timeRunInSeconds.collect {
-                val notification = curNotificationBuilder
-                    .setContentText(TrackingUtility.getFormattedStopWatchTime(it * 1000L))
-                notificationManager.notify(NOTIFICATION_ID, notification.build())
+                if (!isServiceKilled) {
+                    val notification = curNotificationBuilder
+                        .setContentText(TrackingUtility.getFormattedStopWatchTime(it * 1000L))
+                    notificationManager.notify(NOTIFICATION_ID, notification.build())
+                }
             }
         }
 
@@ -281,7 +296,7 @@ class TrackingService : LifecycleService() {
     }
 
     private fun clonePathPoints(): Polylines {
-       return pathPoints.value.map { it.toMutableList() }.toMutableList()
+        return pathPoints.value.map { it.toMutableList() }.toMutableList()
     }
 
 }

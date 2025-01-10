@@ -7,5 +7,11 @@
     <string name="continuar">Continuar</string>
     <string name="comecar_corrida">Começar</string>
     <string name="pausar_corrida">Pausar</string>
+    <string name="cancelar_corrida">Cancelar</string>
     <string name="finalizar_corrida">Finalizar</string>
+
+    <string name="cancelar_corrida_dialog_title">Cancelar Corrida?</string>
+    <string name="cancelar_corrida_dialog_message">Os dados dessa corrida serão perdidos.</string>
+    <string name="cancelar_corrida_dialog_confirm">Sim</string>
+    <string name="cancelar_corrida_dialog_cancel">Não</string>
 </resources>

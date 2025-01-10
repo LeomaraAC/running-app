@@ -23,7 +23,6 @@ import com.example.runningapp.ui.viewmodels.MainViewModel
 import com.example.runningapp.ui.viewmodels.StatisticsViewModel
 import com.example.runningapp.ui.viewmodels.TrackingViewModel
 
-@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun RunNavHost(navController: NavHostController, modifier: Modifier = Modifier) {
     NavHost(
@@ -56,7 +55,12 @@ fun RunNavHost(navController: NavHostController, modifier: Modifier = Modifier) 
             val mainViewModel = hiltViewModel<MainViewModel>()
             val trackingViewModel = hiltViewModel<TrackingViewModel>()
             val context = LocalContext.current
-            TrackingScreen(context=context, mainViewModel = mainViewModel, trackingViewModel = trackingViewModel)
+            TrackingScreen(
+                context = context,
+                navigateToHome = { navController.navigate(HomeDestination.route) },
+                mainViewModel = mainViewModel,
+                trackingViewModel = trackingViewModel
+            )
         }
     }
 }
