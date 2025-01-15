@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.runningapp.services.Polylines
 import com.example.runningapp.services.TrackingService
 import com.example.runningapp.utils.TrackingUtility
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -34,5 +35,20 @@ class TrackingViewModel : ViewModel() {
                 _curTimeFormatted.value = TrackingUtility.getFormattedStopWatchTime(it, true)
             }
         }
+    }
+
+    fun getCurrentPosition(pathPoints: Polylines): LatLng {
+        if (pathPoints.isEmpty()) {
+            return LatLng(0.0, 0.0)
+        }
+        if (pathPoints.last().isNotEmpty()) {
+            return pathPoints.last().last()
+        }
+
+        if (pathPoints.size > 1) {
+            return pathPoints[pathPoints.size - 2].last()
+        }
+
+        return LatLng(0.0, 0.0)
     }
 }

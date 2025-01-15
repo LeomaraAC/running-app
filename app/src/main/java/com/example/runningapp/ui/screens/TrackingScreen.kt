@@ -93,7 +93,7 @@ fun TrackingScreen(
         if (pathPoints.size == 0) {
             return@LaunchedEffect
         }
-        val currentPosition = getCurrentPosition(pathPoints)
+        val currentPosition = trackingViewModel.getCurrentPosition(pathPoints)
         if (pathPoints.size == 1 && pathPoints.last().size == 0) {
             cameraPositionState.position = CameraPosition.fromLatLngZoom(currentPosition, MAP_ZOOM)
         } else {
@@ -286,21 +286,6 @@ private fun BaseButton(
             contentDescription = null
         )
     }
-}
-
-private fun getCurrentPosition(pathPoints: Polylines): LatLng {
-    if (pathPoints.isEmpty()) {
-        return LatLng(0.0, 0.0)
-    }
-    if (pathPoints.last().isNotEmpty()) {
-        return pathPoints.last().last()
-    }
-
-    if (pathPoints.size > 1) {
-        return pathPoints[pathPoints.size - 2].last()
-    }
-
-    return LatLng(0.0, 0.0)
 }
 
 private fun sendCommandToService(context: Context, action: String) {
