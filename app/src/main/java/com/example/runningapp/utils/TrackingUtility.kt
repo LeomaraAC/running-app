@@ -3,7 +3,7 @@ package com.example.runningapp.utils
 import java.util.concurrent.TimeUnit
 
 object TrackingUtility {
-    fun getFormattedStopWatchTime(ms: Long, includeMilles: Boolean = false): String {
+    fun getFormattedStopWatchTime(ms: Long, includeMillis: Boolean = false): String {
         var milliseconds = ms
         val hours = TimeUnit.MILLISECONDS.toHours(milliseconds)
         milliseconds -= TimeUnit.HOURS.toMillis(hours)
@@ -15,7 +15,7 @@ object TrackingUtility {
         val formattedMinutes = if (minutes < 10) "0$minutes" else minutes
         val formattedSeconds = if (seconds < 10) "0$seconds" else seconds
 
-        if (!includeMilles) {
+        if (!includeMillis) {
             return "$formattedHours:$formattedMinutes:$formattedSeconds"
         }
         milliseconds -= TimeUnit.SECONDS.toMillis(seconds)
