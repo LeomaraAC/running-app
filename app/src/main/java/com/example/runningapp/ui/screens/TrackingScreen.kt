@@ -29,6 +29,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -54,8 +55,11 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
+import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
@@ -83,6 +87,7 @@ fun TrackingScreen(
     val pathPoints by trackingViewModel.pathPoints.collectAsState(initial = mutableListOf())
     val isTracking by trackingViewModel.isTracking.collectAsState(initial = false)
     val timeRunning by trackingViewModel.curTimeFormatted.collectAsState(initial = "00:00:00:00")
+    var googleMap by remember { mutableStateOf<GoogleMap?>(null) }
 
     val cameraPositionState = rememberCameraPositionState()
     val properties by remember {
@@ -158,7 +163,10 @@ fun TrackingScreen(
             } else {
                 StartButton(context = context, modifier = Modifier.weight(1f))
                 if (pathPoints.size > 0) {
-                    StopButton(context = context, modifier = Modifier.weight(1f))
+                    StopButton(context = context, modifier = Modifier.weight(1f)) {
+                        zoomToSeeWholeTrack(pathPoints, cameraPositionState)
+                        endAndSaveToDb(trackingViewModel, googleMap)
+                    }
                 }
             }
         }
@@ -221,7 +229,7 @@ fun CancelRunButton(context: Context, navigateToHome: () -> Unit, modifier: Modi
 }
 
 @Composable
-fun StopButton(context: Context, modifier: Modifier = Modifier) {
+fun StopButton(context: Context, modifier: Modifier = Modifier, saveAction: () -> Unit) {
     BaseButton(
         text = R.string.finalizar_corrida,
         icon = R.drawable.stop_icon,
@@ -231,6 +239,7 @@ fun StopButton(context: Context, modifier: Modifier = Modifier) {
             context = context,
             action = ACTION_STOP_SERVICE
         )
+        saveAction()
     }
 }
 
@@ -296,5 +305,23 @@ private fun sendCommandToService(context: Context, action: String) {
         } else {
             context.startService(it)
         }
+    }
+}
+
+private fun zoomToSeeWholeTrack(pathPoints: Polylines, cameraPositionState: CameraPositionState) {
+    val bounds = LatLngBounds.Builder()
+    pathPoints.forEach { polyline ->
+        polyline.forEach { latLng ->
+            bounds.include(latLng)
+        }
+    }
+    cameraPositionState.move(
+        CameraUpdateFactory.newLatLngBounds(bounds.build(), 100)
+    )
+}
+
+private fun endAndSaveToDb(viewModel: TrackingViewModel, googleMap: GoogleMap?) {
+    googleMap?.snapshot { bitmap ->
+        viewModel.saveRun(bitmap)
     }
 }

@@ -22,4 +22,7 @@ object Constants {
     const val NOTIFICATION_CHANNEL_ID = "tracking_channel"
     const val NOTIFICATION_CHANNEL_NAME = "Tracking"
     const val NOTIFICATION_ID = 1
+
+    const val METERS_TO_KILOMETERS = 1000f
+    const val MILLIS_TO_HOURS = 3600000f
 }

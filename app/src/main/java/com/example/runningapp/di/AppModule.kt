@@ -3,6 +3,8 @@ package com.example.runningapp.di
 import android.content.Context
 import androidx.room.Room
 import com.example.runningapp.db.RunningDatabase
+import com.example.runningapp.db.dao.RunDao
+import com.example.runningapp.repositories.RunRepository
 import com.example.runningapp.utils.Constants.RUNNING_DATABASE_NAME
 import dagger.Module
 import dagger.Provides
@@ -23,4 +25,9 @@ object AppModule {
     @Singleton
     @Provides
     fun provideRunDao(db: RunningDatabase) = db.getRunDao()
+
+    @Singleton
+    @Provides
+    fun provideRunRepository(runDao: RunDao) = RunRepository(runDao)
+
 }
