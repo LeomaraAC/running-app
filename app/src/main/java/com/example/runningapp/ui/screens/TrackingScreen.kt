@@ -29,6 +29,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,6 +43,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.runningapp.R
 import com.example.runningapp.services.Polylines
 import com.example.runningapp.services.TrackingService
+import com.example.runningapp.ui.components.snackbar.SnackbarController
+import com.example.runningapp.ui.components.snackbar.SnackbarEvent
 import com.example.runningapp.ui.navigation.NavigationDestination
 import com.example.runningapp.ui.viewmodels.MainViewModel
 import com.example.runningapp.ui.viewmodels.TrackingViewModel
@@ -65,6 +68,7 @@ import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MapType
 import com.google.maps.android.compose.Polyline
 import com.google.maps.android.compose.rememberCameraPositionState
+import kotlinx.coroutines.launch
 
 object TrackingDestination : NavigationDestination {
     override val route: String = "tracking"
@@ -163,10 +167,10 @@ fun TrackingScreen(
             } else {
                 StartButton(context = context, modifier = Modifier.weight(1f))
                 if (pathPoints.size > 0) {
-                    StopButton(context = context, modifier = Modifier.weight(1f)) {
+                    StopButton(context = context, modifier = Modifier.weight(1f), saveAction = {
                         zoomToSeeWholeTrack(pathPoints, cameraPositionState)
                         endAndSaveToDb(trackingViewModel, googleMap)
-                    }
+                    }, navigateToHome = navigateToHome)
                 }
             }
         }
@@ -229,7 +233,14 @@ fun CancelRunButton(context: Context, navigateToHome: () -> Unit, modifier: Modi
 }
 
 @Composable
-fun StopButton(context: Context, modifier: Modifier = Modifier, saveAction: () -> Unit) {
+fun StopButton(
+    context: Context,
+    modifier: Modifier = Modifier,
+    saveAction: () -> Unit,
+    navigateToHome: () -> Unit
+) {
+    val scope = rememberCoroutineScope()
+
     BaseButton(
         text = R.string.finalizar_corrida,
         icon = R.drawable.stop_icon,
@@ -240,6 +251,12 @@ fun StopButton(context: Context, modifier: Modifier = Modifier, saveAction: () -
             action = ACTION_STOP_SERVICE
         )
         saveAction()
+        scope.launch {
+            SnackbarController.sendEvent(
+                event = SnackbarEvent(message = context.getString(R.string.corrida_salva_sucesso))
+            )
+        }
+        navigateToHome()
     }
 }
 
